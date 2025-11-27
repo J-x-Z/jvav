@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JVAV 抽象网站</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+    body {
+      margin: 0;
+      font-family: 'Share Tech Mono', monospace;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #cfd8dc;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 2rem;
+      box-sizing: border-box;
+    }
+    .container {
+      max-width: 960px;
+      background: rgba(15, 32, 39, 0.85);
+      border-radius: 8px;
+      box-shadow: 0 0 20px 1px #00ffff88;
+      padding: 2rem;
+      animation: fadeIn 1.5s ease-in-out;
+      margin-top: 60px;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #00ffff66;
+      padding-bottom: 1rem;
+    }
+    header h1 {
+      font-size: 3rem;
+      color: #00ffff;
+      letter-spacing: 0.12em;
+      margin: 0;
+      text-shadow: 0 0 8px #00ffff;
+    }
+    header p {
+      font-size: 1.2rem;
+      color: #66ffffaa;
+      margin-top: 0.4rem;
+      font-style: italic;
+    }
+    section {
+      margin-bottom: 2rem;
+      border-left: 4px solid #00ffea;
+      padding-left: 1rem;
+      min-height: 120px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-style: italic;
+      font-size: 1.5rem;
+    }
+    section h2 {
+      display: none;
+    }
+    .menu-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      height: 50px;
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      box-shadow: 0 2px 8px rgba(0, 255, 255, 0.2);
+      z-index: 1000;
+    }
+    .menu-bar .menu-button {
+      background: none;
+      border: 2px solid #00ffff;
+      color: #00ffff;
+      padding: 0.2rem 0.8rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1rem;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+      user-select: none;
+    }
+    .menu-bar .menu-button:hover {
+      background-color: #00ffff33;
+    }
+    .menu-bar .menu-button:active {
+      transform: scale(0.95);
+      background-color: #00ffff66;
+      transition: background-color 0.1s ease, transform 0.1s ease;
+    }
+    .menu-dropdown {
+      position: fixed;
+      top: 50px;
+      left: 1rem;
+      background: rgba(15, 32, 39, 0.95);
+      border: 1px solid #00ffff;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #00ffffcc;
+      display: none;
+      flex-direction: column;
+      padding: 0.5rem;
+      z-index: 1001;
+      min-width: 160px;
+    }
+    .menu-dropdown a {
+      color: #00ffff;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      font-family: 'Share Tech Mono', monospace;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+    .menu-dropdown a:hover {
+      background-color: #00ffff44;
+    }
+  </style>
+  <script>
+    function toggleMenu() {
+      const dropdown = document.getElementById('menuDropdown');
+      if (dropdown.style.display === 'flex') {
+        dropdown.style.display = 'none';
+      } else {
+        dropdown.style.display = 'flex';
+      }
+    }
+    document.addEventListener('click', function(event) {
+      const dropdown = document.getElementById('menuDropdown');
+      const button = document.getElementById('menuButton');
+      if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+        dropdown.style.display = 'none';
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="menu-bar">
+    <button id="menuButton" class="menu-button" onclick="toggleMenu()">菜单</button>
+    <div id="menuDropdown" class="menu-dropdown">
+      <a href="index.html">首页</a>
+      <a href="about.html">关于</a>
+      <a href="contact.html">联系</a>
+      <a href="#">帮助</a>
+    </div>
+  </div>
+  <div class="container">
+    <header>
+      <h1>JVAV</h1>
+    </header>
+    <main>
+      <section>施工中</section>
+      <section>施工中</section>
+      <section>施工中</section>
+      <section>施工中</section>
+      <section>施工中</section>
+    </main>
+  </div>
+</body>
+</html>
