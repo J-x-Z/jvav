@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>JVAV</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
     body {
       margin: 0;
       font-family: 'Share Tech Mono', monospace;
@@ -18,6 +20,7 @@
       padding: 2rem;
       box-sizing: border-box;
     }
+
     .container {
       max-width: 960px;
       background: rgba(15, 32, 39, 0.85);
@@ -26,17 +29,30 @@
       padding: 2rem;
       animation: fadeIn 1.5s ease-in-out;
       margin-top: 60px;
+      position: relative;
+      /* Ensure it sits on top of fixed background */
+      z-index: 1;
     }
+
     @keyframes fadeIn {
-      from {opacity: 0; transform: translateY(10px);}
-      to {opacity: 1; transform: translateY(0);}
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
+
     header {
       text-align: center;
       margin-bottom: 1.5rem;
       border-bottom: 1px solid #00ffff66;
       padding-bottom: 1rem;
     }
+
     header h1 {
       font-size: 3rem;
       color: #00ffff;
@@ -44,12 +60,14 @@
       margin: 0;
       text-shadow: 0 0 8px #00ffff;
     }
+
     header p {
       font-size: 1.2rem;
       color: #66ffffaa;
       margin-top: 0.4rem;
       font-style: italic;
     }
+
     section {
       margin-bottom: 2rem;
       border-left: 4px solid #00ffea;
@@ -61,9 +79,11 @@
       font-style: italic;
       font-size: 1.5rem;
     }
+
     section h2 {
       display: none;
     }
+
     .menu-bar {
       position: fixed;
       top: 0;
@@ -78,6 +98,7 @@
       box-shadow: 0 2px 8px rgba(0, 255, 255, 0.2);
       z-index: 1000;
     }
+
     .menu-bar .menu-button {
       background: none;
       border: 2px solid #00ffff;
@@ -90,14 +111,17 @@
       transition: background-color 0.3s ease, transform 0.1s ease;
       user-select: none;
     }
+
     .menu-bar .menu-button:hover {
       background-color: #00ffff33;
     }
+
     .menu-bar .menu-button:active {
       transform: scale(0.95);
       background-color: #00ffff66;
       transition: background-color 0.1s ease, transform 0.1s ease;
     }
+
     .menu-dropdown {
       position: fixed;
       top: 50px;
@@ -112,6 +136,7 @@
       z-index: 1001;
       min-width: 160px;
     }
+
     .menu-dropdown a {
       color: #00ffff;
       text-decoration: none;
@@ -120,6 +145,7 @@
       border-radius: 4px;
       transition: background-color 0.3s ease;
     }
+
     .menu-dropdown a:hover {
       background-color: #00ffff44;
     }
@@ -133,7 +159,7 @@
         dropdown.style.display = 'flex';
       }
     }
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
       const dropdown = document.getElementById('menuDropdown');
       const button = document.getElementById('menuButton');
       if (!button.contains(event.target) && !dropdown.contains(event.target)) {
@@ -142,7 +168,12 @@
     });
   </script>
 </head>
+
 <body>
+  <!-- Saturn Background Container -->
+  <div id="saturn-container"
+    style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;"></div>
+
   <div class="menu-bar">
     <button id="menuButton" class="menu-button" onclick="toggleMenu()">菜单</button>
     <div id="menuDropdown" class="menu-dropdown">
@@ -164,5 +195,21 @@
       <section>施工中</section>
     </main>
   </div>
+
+  <!-- Dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+  <!-- Saturn Background -->
+  <script src="saturn_bg.js"></script>
+  <script>
+    new SaturnBackground('saturn-container');
+  </script>
 </body>
+
 </html>
