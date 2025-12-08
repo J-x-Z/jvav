@@ -8,7 +8,7 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
-    /* CSS Reset & Tuning */
+    /* CSS Reset */
     * {
       box-sizing: border-box;
     }
@@ -172,17 +172,6 @@
 </head>
 
 <body>
-  <!-- DEBUG STATUS PANEL -->
-  <div id="system-status"
-    style="display: block; position:fixed; bottom:10px; right:10px; background:rgba(0,0,0,0.9); border:1px solid #00ffff; padding:10px; font-size:12px; z-index:9999; color:#fff; min-width: 200px;">
-    <div style="border-bottom:1px solid #444; margin-bottom:5px; font-weight:bold;">SYSTEM DIAGNOSTICS</div>
-    <div id="status-jquery" style="color:orange">jQuery: Loading...</div>
-    <div id="status-chessjs" style="color:orange">Chess.js: Loading...</div>
-    <div id="status-paho" style="color:orange">Paho MQTT: Loading...</div>
-    <div id="status-shooter" style="color:orange">Shooter Script: Loading...</div>
-    <div id="status-platformer" style="color:orange">Platformer Script: Loading...</div>
-  </div>
-
   <!-- Saturn Background Container -->
   <div id="saturn-container"
     style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;"></div>
@@ -211,7 +200,120 @@
       </div>
     </header>
     <main>
-      <section>施工中</section>
+      <!-- ARTICLE FEED (Local JSON + Markdown) -->
+      <style>
+        /* Premium Article Typography */
+        .article-entry {
+          background: rgba(0, 0, 0, 0.2);
+          border: 1px solid #00ffff22;
+          border-radius: 8px;
+          padding: 20px;
+          margin-bottom: 20px;
+        }
+
+        .article-content {
+          font-size: 0.95rem;
+          line-height: 1.8;
+          color: #d0d0d0;
+        }
+
+        .article-content h1,
+        .article-content h2,
+        .article-content h3 {
+          color: #00ffff;
+          margin-top: 1.5em;
+          margin-bottom: 0.8em;
+        }
+
+        .article-content p {
+          margin-bottom: 1em;
+        }
+
+        .article-content li {
+          margin-bottom: 0.5em;
+        }
+
+        .article-content blockquote {
+          border-left: 3px solid #ff00ff;
+          margin: 1em 0;
+          padding-left: 1em;
+          color: #ff00ff;
+          background: rgba(255, 0, 255, 0.05);
+          padding: 10px;
+        }
+
+        .article-content code {
+          background: rgba(0, 0, 0, 0.5);
+          padding: 2px 5px;
+          border-radius: 3px;
+          font-family: monospace;
+          color: #ffff00;
+        }
+
+        .article-content pre {
+          background: #000;
+          border: 1px solid #333;
+          padding: 15px;
+          border-radius: 5px;
+          overflow-x: auto;
+        }
+
+        .article-content pre code {
+          background: none;
+          padding: 0;
+          color: #0f0;
+        }
+
+        .article-content img {
+          max-width: 100%;
+          border-radius: 5px;
+          border: 1px solid #333;
+          margin: 10px 0;
+        }
+      </style>
+
+      <div id="article-feed">
+        <section>Loading Articles...</section>
+      </div>
+
+      <!-- Markdown Parser -->
+      <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+      <script>
+        // Micro-CMS Loader (JSON Mode)
+        fetch('articles.json')
+          .then(response => response.json())
+          .then(data => {
+            const feed = document.getElementById('article-feed');
+            feed.innerHTML = '';
+
+            data.forEach(article => {
+              const section = document.createElement('div');
+              section.className = 'article-entry';
+
+              const h2 = document.createElement('h2');
+              h2.style.color = '#00ffff';
+              h2.style.marginTop = '0';
+              h2.style.borderBottom = '1px solid #00ffff44';
+              h2.style.paddingBottom = '10px';
+              h2.style.fontSize = '1.4rem';
+              h2.innerHTML = `${article.title} <span style="font-size:0.8rem; float:right; color:#666; font-weight:normal">${article.date || ''}</span>`;
+
+              const content = document.createElement('div');
+              content.className = 'article-content';
+              // Parse Markdown content
+              content.innerHTML = marked.parse(article.content);
+
+              section.appendChild(h2);
+              section.appendChild(content);
+              feed.appendChild(section);
+            });
+          })
+          .catch(err => {
+            console.error('CMS Error:', err);
+            document.getElementById('article-feed').innerHTML = '<section style="color:red">Failed to load articles.json</section>';
+          });
+      </script>
 
       <!-- LIVE PLAYGROUND -->
       <section id="live-playground-section" style="display: block; border-left: none; padding-bottom: 2rem;">
@@ -227,10 +329,13 @@
         <h2
           style="display: block; color: #00ffff; margin-top: 0; margin-bottom: 20px; font-size: 1.5rem; border-bottom: 1px solid #00ffff44; padding-bottom: 10px;">
           > 公共频道 / CHAT ROOM</h2>
-        <script src="https://giscus.app/client.js" data-repo="J-x-Z/jvav" data-repo-id="R_kgDOQT6TSA"
-          data-category="General" data-category-id="DIC_kwDOQT6TSM4CzjJh" data-mapping="pathname" data-strict="0"
-          data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="dark_dimmed"
-          data-lang="zh-CN" crossorigin="anonymous" async></script>
+        <div
+          style="max-height: 600px; overflow-y: auto; padding-right: 10px; border: 1px solid #00ffff22; border-radius: 8px; background: rgba(0,0,0,0.2);">
+          <script src="https://giscus.app/client.js" data-repo="J-x-Z/jvav" data-repo-id="R_kgDOQT6TSA"
+            data-category="General" data-category-id="DIC_kwDOQT6TSM4CzjJh" data-mapping="pathname" data-strict="0"
+            data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="dark_dimmed"
+            data-lang="zh-CN" crossorigin="anonymous" async></script>
+        </div>
       </section>
 
       <!-- GAME CENTER (Chess) -->
@@ -329,26 +434,21 @@
   </div>
 
   <!-- DEPENDENCIES & SCRIPTS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
-    onload="document.getElementById('status-jquery').style.color='#0f0'; document.getElementById('status-jquery').innerText='jQuery: OK'"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"
-    onload="document.getElementById('status-chessjs').style.color='#0f0'; document.getElementById('status-chessjs').innerText='Chess.js: OK'"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
   <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"
-    onload="document.getElementById('status-paho').style.color='#0f0'; document.getElementById('status-paho').innerText='Paho MQTT: OK'"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
 
   <script src="live_canvas.js"></script>
   <script>if (document.getElementById('live-canvas-container')) new LiveCanvas('live-canvas-container');</script>
 
   <script src="chess_game.js"></script>
-  <script src="shooter_game.js"
-    onload="document.getElementById('status-shooter').style.color='#0f0'; document.getElementById('status-shooter').innerText='Shooter Script: OK';"></script>
-  <script src="platformer_game.js"
-    onload="document.getElementById('status-platformer').style.color='#0f0'; document.getElementById('status-platformer').innerText='Platformer Script: OK';"></script>
+  <script src="shooter_game.js"></script>
+  <script src="platformer_game.js"></script>
 
   <script>
     window.addEventListener('load', () => {
@@ -361,21 +461,13 @@
       // Init Shooter
       try {
         if (window.ShooterGame) { new ShooterGame('shooter-canvas'); }
-        else {
-          console.warn("ShooterGame missing");
-          document.getElementById('status-shooter').style.color = 'red';
-          document.getElementById('status-shooter').innerText = 'Shooter Script: FAILED';
-        }
+        else { console.warn("ShooterGame missing"); }
       } catch (e) { console.error("Shooter:", e); }
 
       // Init Platformer
       try {
         if (window.PlatformerGame) { new PlatformerGame('platformer-canvas'); }
-        else {
-          console.warn("PlatformerGame missing");
-          document.getElementById('status-platformer').style.color = 'red';
-          document.getElementById('status-platformer').innerText = 'Platformer Script: FAILED';
-        }
+        else { console.warn("PlatformerGame missing"); }
       } catch (e) { console.error("Platformer:", e); }
     });
   </script>

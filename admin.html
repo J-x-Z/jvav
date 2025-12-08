@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JVAV Admin Portal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Share Tech Mono', monospace;
+            background: #111;
+            color: #ddd;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            color: #00ffff;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        input,
+        textarea,
+        button {
+            font-family: 'Share Tech Mono', monospace;
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+            border-radius: 4px;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #00ffff;
+            outline: none;
+        }
+
+        button {
+            cursor: pointer;
+            background: #333;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #444;
+        }
+
+        .btn-primary {
+            background: #005f5f;
+            color: #00ffff;
+            border-color: #00ffff;
+        }
+
+        .btn-primary:hover {
+            background: #008080;
+        }
+
+        .btn-danger {
+            background: #5f0000;
+            color: #ff5555;
+            border-color: #ff0000;
+            width: auto;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #article-list-container {
+            margin-top: 20px;
+        }
+
+        .article-item {
+            background: #252525;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid #00ffff;
+        }
+
+        .status-bar {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .success {
+            background: #003300;
+            color: #00ff00;
+            display: block;
+        }
+
+        .error {
+            background: #330000;
+            color: #ff0000;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>> JVAV SYSTEM ADMIN</h1>
+
+        <!-- LOGIN VIEW -->
+        <div id="login-view">
+            <p style="color: #888;">> AUTHENTICATION REQUIRED</p>
+            <p style="font-size: 0.8rem; color: #666;">Enter your GitHub Personal Access Token (Repo Scope)</p>
+            <input type="password" id="github-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+            <button onclick="login()" class="btn-primary">AUTHENTICATE</button>
+            <div
+                style="margin-top: 20px; font-size: 0.8rem; color: #444; border-top: 1px solid #333; padding-top: 10px;">
+                <strong>Security Note:</strong> Your token acts as the key. GitHub API restricts write access to valid
+                token holders only.
+                Strangers accessing this page cannot modify content without your token. The token is saved locally in
+                your browser only.
+            </div>
+        </div>
+
+        <!-- DASHBOARD VIEW -->
+        <div id="dashboard-view" class="hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <span>Current Mode: <strong style="color: #00ffff;">EDITOR</strong></span>
+                <button onclick="logout()" style="width: auto;">LOGOUT</button>
+            </div>
+
+            <div id="editor-area">
+                <h3>> Edit / New Article</h3>
+                <input type="text" id="edit-title" placeholder="Article Title (支持 HTML/Markdown)">
+                <input type="date" id="edit-date">
+                <textarea id="edit-content" rows="15" placeholder="Content (Markdown supported...)"></textarea>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="saveArticle()" class="btn-primary">PUBLISH / UPDATE</button>
+                    <button onclick="clearEditor()">CLEAR</button>
+                </div>
+            </div>
+
+            <div id="status-display" class="status-bar"></div>
+
+            <h3>> Published Articles</h3>
+            <div id="article-list">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        const REPO_OWNER = 'J-x-Z';
+        const REPO_NAME = 'jvav';
+        const FILE_PATH = 'articles.json';
+        let currentArticles = [];
+        let fileSha = ''; // Required for GitHub API updates
+
+        // Check for saved token
+        const savedToken = localStorage.getItem('github_pat');
+        if (savedToken) {
+            document.getElementById('github-token').value = savedToken;
+            // Don't auto-login to verify intention, or we could:
+            login();
+        }
+
+        function login() {
+            const token = document.getElementById('github-token').value.trim();
+            if (!token) return alert('Please enter a token');
+
+            // Basic formatted check could go here
+
+            localStorage.setItem('github_pat', token);
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('dashboard-view').classList.remove('hidden');
+
+            loadArticles();
+        }
+
+        function logout() {
+            localStorage.removeItem('github_pat');
+            location.reload();
+        }
+
+        async function loadArticles() {
+            showStatus('Loading articles from GitHub...', '');
+            try {
+                const token = localStorage.getItem('github_pat');
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+
+            if (!res.ok) {
+                if (res.status === 401) throw new Error("Invalid Token. Permission Denied.");
+                throw new Error(`GitHub API Error: ${res.status}`);
+            }
+
+            const data = await res.json();
+            fileSha = data.sha;
+
+            // Decode content (Base64 -> UTF8)
+            // Handling UTF8 characters properly
+            const content = new TextDecoder().decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0)));
+            currentArticles = JSON.parse(content);
+
+            renderList();
+            showStatus('Connected to Repository.', 'success');
+        } catch (e) {
+            console.error(e);
+            showStatus(e.message, 'error');
+            if (e.message.includes("Invalid Token")) {
+                setTimeout(logout, 2000);
+            }
+        }
+        }
+
+        function renderList() {
+            const list = document.getElementById('article-list');
+            list.innerHTML = '';
+
+            // Sort by date desc
+            const sorted = [...currentArticles].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            sorted.forEach((art, index) => {
+                const div = document.createElement('div');
+                div.className = 'article-item';
+                div.innerHTML = `
+                <div>
+                    <div style="color: #fff; font-weight: bold;">${art.title}</div>
+                    <div style="font-size: 0.8rem; color: #666;">${art.date}</div>
+                </div>
+                <div>
+                    <button class="btn-primary" style="width:auto; margin-right:5px; padding:5px 10px; font-size:0.8rem;" onclick="editArticle(${art.id})">EDIT</button>
+                    <button class="btn-danger" onclick="deleteArticle(${art.id})">DEL</button>
+                </div>
+            `;
+                list.appendChild(div);
+            });
+        }
+
+        let editingId = null;
+
+        function editArticle(id) {
+            const art = currentArticles.find(a => a.id === id);
+            if (!art) return;
+
+            document.getElementById('edit-title').value = art.title;
+            document.getElementById('edit-date').value = art.date;
+            document.getElementById('edit-content').value = art.content;
+            editingId = id;
+
+            window.scrollTo(0, 0);
+        }
+
+        function clearEditor() {
+            document.getElementById('edit-title').value = '';
+            document.getElementById('edit-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('edit-content').value = '';
+            editingId = null;
+        }
+
+        function deleteArticle(id) {
+            if (!confirm("Are you sure you want to delete this article?")) return;
+            currentArticles = currentArticles.filter(a => a.id !== id);
+            pushChanges(`Deleted article ${id}`);
+        }
+
+        async function saveArticle() {
+            const title = document.getElementById('edit-title').value;
+            const date = document.getElementById('edit-date').value;
+            const content = document.getElementById('edit-content').value;
+
+            if (!title || !content) return alert("Title and Content are required");
+
+            if (editingId) {
+                // Update
+                const index = currentArticles.findIndex(a => a.id === editingId);
+                if (index !== -1) {
+                    currentArticles[index] = { id: editingId, title, date, content };
+                }
+            } else {
+                // Create
+                const newId = Date.now();
+                currentArticles.unshift({ id: newId, title, date, content });
+            }
+
+            await pushChanges(`Update articles via Admin Panel`);
+            clearEditor();
+        }
+
+        async function pushChanges(commitMessage) {
+            showStatus('Pushing to GitHub...', '');
+
+            try {
+                const token = localStorage.getItem('github_pat');
+
+                // Encode to Base64 (UTF8 safe)
+                const contentStr = JSON.stringify(currentArticles, null, 2);
+                const u8 = new TextEncoder().encode(contentStr);
+                const b64 = btoa(String.fromCharCode.apply(null, u8));
+
+                const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: commitMessage,
+                        content: b64,
+                        sha: fileSha // Important! Prevents overwritting concurrent changes
+                    })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(`GitHub API Error: ${errData.message}`);
+                }
+
+                const data = await res.json();
+                fileSha = data.content.sha; // Update SHA for next write
+
+                renderList();
+                showStatus('Published successfully!', 'success');
+            } catch (e) {
+                console.error(e);
+                showStatus(`Publish Failed: ${e.message}`, 'error');
+            }
+        }
+
+        function showStatus(msg, type) {
+            const el = document.getElementById('status-display');
+            el.innerText = msg;
+            el.className = 'status-bar ' + type;
+            el.style.display = 'block';
+        }
+
+        // Init Date
+        clearEditor();
+    </script>
+
+</body>
+
+</html>
