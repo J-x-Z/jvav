@@ -424,3 +424,6 @@ class XiangqiSandbox {
         $('#status-xiangqi').html(`${turnText}<br>Red: ${rName} | Black: ${bName}`);
     }
 }
+
+// Explicitly export to window
+window.ChessGameManager = ChessGameManager;

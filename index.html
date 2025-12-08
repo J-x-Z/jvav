@@ -8,6 +8,11 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
+    /* CSS Reset & Tuning */
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: 'Share Tech Mono', monospace;
@@ -18,20 +23,23 @@
       align-items: flex-start;
       min-height: 100vh;
       padding: 2rem;
-      box-sizing: border-box;
+      overflow-y: auto;
     }
 
     .container {
       max-width: 960px;
-      background: rgba(15, 32, 39, 0.85);
-      border-radius: 8px;
-      box-shadow: 0 0 20px 1px #00ffff88;
+      width: 100%;
+      background: rgba(16, 32, 39, 0.85);
       padding: 2rem;
-      animation: fadeIn 1.5s ease-in-out;
-      margin-top: 60px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), 0 0 20px #00ffff44;
+      text-align: left;
+      border: 1px solid rgba(0, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
       position: relative;
-      /* Ensure it sits on top of fixed background */
       z-index: 1;
+      margin-top: 60px;
+      animation: fadeIn 1.5s ease-in-out;
     }
 
     @keyframes fadeIn {
@@ -46,44 +54,48 @@
       }
     }
 
-    header {
-      text-align: center;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid #00ffff66;
-      padding-bottom: 1rem;
-    }
-
-    header h1 {
+    h1 {
       font-size: 3rem;
+      margin-bottom: 0.5rem;
       color: #00ffff;
-      letter-spacing: 0.12em;
-      margin: 0;
-      text-shadow: 0 0 8px #00ffff;
+      text-shadow: 0 0 10px #00ffff;
+      text-align: center;
     }
 
-    header p {
-      font-size: 1.2rem;
-      color: #66ffffaa;
-      margin-top: 0.4rem;
-      font-style: italic;
+    h2 {
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      color: #b0bec5;
+      text-align: center;
+      border-bottom: 1px solid #00ffff44;
+      padding-bottom: 0.5rem;
     }
 
     section {
       margin-bottom: 2rem;
+      padding: 1rem;
       border-left: 4px solid #00ffea;
-      padding-left: 1rem;
-      min-height: 120px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-style: italic;
-      font-size: 1.5rem;
+      background: rgba(0, 255, 255, 0.05);
+      transition: all 0.3s ease;
     }
 
-    section h2 {
-      display: none;
+    section:hover {
+      background: rgba(0, 255, 255, 0.1);
+      box-shadow: 0 0 15px #00ffff22;
     }
 
+    a {
+      color: #00ffff;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    a:hover {
+      color: #ffff00;
+      text-shadow: 0 0 5px #ffff00;
+    }
+
+    /* Menu Bar */
     .menu-bar {
       position: fixed;
       top: 0;
@@ -109,17 +121,10 @@
       cursor: pointer;
       border-radius: 4px;
       transition: background-color 0.3s ease, transform 0.1s ease;
-      user-select: none;
     }
 
     .menu-bar .menu-button:hover {
       background-color: #00ffff33;
-    }
-
-    .menu-bar .menu-button:active {
-      transform: scale(0.95);
-      background-color: #00ffff66;
-      transition: background-color 0.1s ease, transform 0.1s ease;
     }
 
     .menu-dropdown {
@@ -144,6 +149,7 @@
       font-family: 'Share Tech Mono', monospace;
       border-radius: 4px;
       transition: background-color 0.3s ease;
+      display: block;
     }
 
     .menu-dropdown a:hover {
@@ -153,11 +159,7 @@
   <script>
     function toggleMenu() {
       const dropdown = document.getElementById('menuDropdown');
-      if (dropdown.style.display === 'flex') {
-        dropdown.style.display = 'none';
-      } else {
-        dropdown.style.display = 'flex';
-      }
+      dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
     }
     document.addEventListener('click', function (event) {
       const dropdown = document.getElementById('menuDropdown');
@@ -170,6 +172,17 @@
 </head>
 
 <body>
+  <!-- DEBUG STATUS PANEL -->
+  <div id="system-status"
+    style="display: block; position:fixed; bottom:10px; right:10px; background:rgba(0,0,0,0.9); border:1px solid #00ffff; padding:10px; font-size:12px; z-index:9999; color:#fff; min-width: 200px;">
+    <div style="border-bottom:1px solid #444; margin-bottom:5px; font-weight:bold;">SYSTEM DIAGNOSTICS</div>
+    <div id="status-jquery" style="color:orange">jQuery: Loading...</div>
+    <div id="status-chessjs" style="color:orange">Chess.js: Loading...</div>
+    <div id="status-paho" style="color:orange">Paho MQTT: Loading...</div>
+    <div id="status-shooter" style="color:orange">Shooter Script: Loading...</div>
+    <div id="status-platformer" style="color:orange">Platformer Script: Loading...</div>
+  </div>
+
   <!-- Saturn Background Container -->
   <div id="saturn-container"
     style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;"></div>
@@ -183,16 +196,13 @@
       <a href="#">帮助</a>
     </div>
   </div>
+
   <div class="container">
     <header>
       <h1>JVAV</h1>
-
-      <!-- Danmaku Area -->
       <div id="danmaku-stage"
         style="width: 100%; height: 120px; position: relative; overflow: hidden; margin-bottom: 10px; border-top: 1px solid #00ffff22; border-bottom: 1px solid #00ffff22;">
-        <!-- Danmaku tracks will be here -->
       </div>
-
       <div style="text-align: center; margin-bottom: 15px; display: flex; justify-content: center; gap: 10px;">
         <input type="text" id="danmaku-input" placeholder="发送实时弹幕 (Max 10字)" maxlength="10"
           style="background: rgba(0,0,0,0.5); border: 1px solid #00ffff; color: #00ffff; padding: 5px 10px; border-radius: 4px; font-family: 'Share Tech Mono'; width: 250px;">
@@ -202,62 +212,38 @@
     </header>
     <main>
       <section>施工中</section>
-      <section>施工中</section>
-      <section>施工中</section>
-      <section>施工中</section>
-      <section>施工中</section>
 
       <!-- LIVE PLAYGROUND -->
       <section id="live-playground-section" style="display: block; border-left: none; padding-bottom: 2rem;">
         <h2
           style="display: block; color: #ff00ff; margin-top: 0; margin-bottom: 10px; font-size: 1.5rem; border-bottom: 1px solid #ff00ff44; padding-bottom: 10px;">
-          > 实时互动画布 / LIVE CANVAS
-        </h2>
+          > 实时互动画布 / LIVE CANVAS</h2>
         <p style="font-size: 0.9rem; color: #ff00ffaa; margin-bottom: 10px;">> 在这里移动鼠标或绘画，其他在线用户都能实时看到！(无需登录)</p>
         <div id="live-canvas-container" style="width: 100%; height: 300px; position: relative;"></div>
       </section>
 
-      <!-- CHAT ROOM SECTION -->
+      <!-- CHAT ROOM -->
       <section style="display: block; height: auto; padding-top: 1rem; padding-bottom: 1rem;">
         <h2
           style="display: block; color: #00ffff; margin-top: 0; margin-bottom: 20px; font-size: 1.5rem; border-bottom: 1px solid #00ffff44; padding-bottom: 10px;">
-          > 公共频道 / CHAT ROOM
-        </h2>
-
+          > 公共频道 / CHAT ROOM</h2>
         <script src="https://giscus.app/client.js" data-repo="J-x-Z/jvav" data-repo-id="R_kgDOQT6TSA"
           data-category="General" data-category-id="DIC_kwDOQT6TSM4CzjJh" data-mapping="pathname" data-strict="0"
           data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="dark_dimmed"
-          data-lang="zh-CN" crossorigin="anonymous" async>
-          </script>
-        <p style="font-size: 0.8rem; color: #666; text-align: center; margin-top: 10px;">
-          * 需要登录 GitHub 才能发言，数据实时存储在 Discussions 中
-        </p>
-
-        <!-- Visitor Counter (Busuanzi) -->
-        <div
-          style="text-align: center; margin-top: 30px; font-size: 0.9rem; color: #00ffffaa; border-top: 1px dashed #00ffff44; padding-top: 10px;">
-          <span id="busuanzi_container_site_pv" style="display:none">
-            本站总访问量 <span id="busuanzi_value_site_pv" style="color: #fff;"></span> 次
-          </span>
-          <span style="margin: 0 10px;">|</span>
-          <span id="busuanzi_container_site_uv" style="display:none">
-            访客数 <span id="busuanzi_value_site_uv" style="color: #fff;"></span> 人
-          </span>
-        </div>
+          data-lang="zh-CN" crossorigin="anonymous" async></script>
       </section>
 
-      <!-- GAME CENTER -->
+      <!-- GAME CENTER (Chess) -->
       <section id="game-section" style="display: block; border-left: none; padding-bottom: 2rem;">
         <h2
           style="display: block; color: #ffff00; margin-top: 0; margin-bottom: 10px; font-size: 1.5rem; border-bottom: 1px solid #ffff0044; padding-bottom: 10px;">
-          > 游戏大厅 / GAME CENTER
-        </h2>
+          > 游戏大厅 / GAME CENTER</h2>
         <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
           <!-- International Chess -->
           <div
-            style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; border: 1px solid #ffff0044; width: 340px;">
+            style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; border: 1px solid #ffff0044; width: 340px; box-sizing: border-box;">
             <h3 style="color: #ffff00; margin: 0 0 10px 0; text-align: center;">国际象棋 (International Chess)</h3>
-            <div id="board-chess" style="width: 320px; margin: 0 auto;"></div>
+            <div id="board-chess" style="width: 300px; margin: 0 auto;"></div>
             <div id="status-chess" style="color: #ccc; font-size: 0.8rem; margin-top: 5px; text-align: center;">
               Waiting...</div>
             <div style="text-align: center; margin-top: 10px;">
@@ -265,13 +251,12 @@
               <button id="btn-chess-sit-b" style="font-size: 0.8rem;">Play Black</button>
             </div>
           </div>
-
-          <!-- Chinese Chess (Xiangqi) -->
+          <!-- Chinese Chess -->
           <div
-            style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; border: 1px solid #ff440044; width: 340px;">
+            style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; border: 1px solid #ff440044; width: 340px; box-sizing: border-box;">
             <h3 style="color: #ff4400; margin: 0 0 10px 0; text-align: center;">中国象棋 (Xiangqi)</h3>
             <div id="board-xiangqi"
-              style="width: 320px; height: 360px; margin: 0 auto; position: relative; background: #dcb35c; border: 2px solid #5a3c18;">
+              style="width: 300px; height: 340px; margin: 0 auto; position: relative; background: #dcb35c; border: 2px solid #5a3c18;">
             </div>
             <div id="status-xiangqi" style="color: #ccc; font-size: 0.8rem; margin-top: 5px; text-align: center;">
               Waiting...</div>
@@ -288,15 +273,12 @@
       <section id="shooter-section" style="display: block; border-left: none; padding-bottom: 2rem;">
         <h2
           style="display: block; color: #ff00ff; margin-top: 0; margin-bottom: 10px; font-size: 1.5rem; border-bottom: 1px solid #ff00ff44; padding-bottom: 10px;">
-          > 乱斗竞技场 / BATTLE ARENA (2D Shooter)
-        </h2>
+          > 乱斗竞技场 / BATTLE ARENA</h2>
         <div style="text-align: center;">
           <div id="shooter-container"
             style="position: relative; width: 100%; max-width: 800px; height: 400px; margin: 0 auto; background: #000; border: 2px solid #ff00ff; overflow: hidden;">
             <canvas id="shooter-canvas" width="800" height="400"
               style="display: block; width: 100%; height: 100%;"></canvas>
-
-            <!-- Overlay -->
             <div id="shooter-overlay"
               style="position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10;">
               <h3 style="color: #ff00ff; font-family: 'Share Tech Mono'; font-size: 2rem; margin: 0;">NEON BATTLE</h3>
@@ -306,8 +288,6 @@
                 GAME</button>
               <div id="shooter-status" style="color: #ccc; margin-top: 10px; font-size: 0.8rem;">Online Players: 0</div>
             </div>
-
-            <!-- HUD -->
             <div id="shooter-hud"
               style="position: absolute; top: 10px; left: 10px; z-index: 5; display: none; pointer-events: none;">
               <div style="color: #fff; font-size: 1.2rem;">HP: <span id="shooter-hp" style="color: #0f0;">100</span>
@@ -316,84 +296,114 @@
           </div>
         </div>
       </section>
+
+      <!-- PLATFORMER GAME -->
+      <section id="platformer-section" style="display: block; border-left: none; padding-bottom: 2rem;">
+        <h2
+          style="display: block; color: #ff00ff; margin-top: 0; margin-bottom: 10px; font-size: 1.5rem; border-bottom: 1px solid #ff00ff44; padding-bottom: 10px;">
+          > 乱斗竞技场 II / SMASH ARENA</h2>
+        <div style="text-align: center;">
+          <div id="platformer-container"
+            style="position: relative; width: 100%; max-width: 800px; height: 400px; margin: 0 auto; background: #000; border: 2px solid #ff00ff; overflow: hidden;">
+            <canvas id="platformer-canvas" width="800" height="400"
+              style="display: block; width: 100%; height: 100%;"></canvas>
+            <div id="platformer-overlay"
+              style="position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10;">
+              <h3 style="color: #ff00ff; font-family: 'Share Tech Mono'; font-size: 2rem; margin: 0;">SMASH ARENA</h3>
+              <p style="color: #fff; margin: 10px 0;">WASD/Space to Jump | Click to Shoot</p>
+              <button id="btn-join-platformer"
+                style="padding: 10px 30px; font-size: 1.2rem; background: #ff00ff; color: #fff; border: none; font-family: 'Share Tech Mono'; cursor: pointer; margin-top: 10px;">JOIN
+                GAME</button>
+              <div id="platformer-status" style="color: #ccc; margin-top: 10px; font-size: 0.8rem;">Online Players: 0
+              </div>
+            </div>
+            <div id="platformer-hud"
+              style="position: absolute; top: 10px; left: 10px; z-index: 5; display: none; pointer-events: none;">
+              <div style="color: #fff; font-size: 1.2rem;">HP: <span id="platformer-hp" style="color: #0f0;">100</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
-  <!-- Dependencies -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <!-- DEPENDENCIES & SCRIPTS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+    onload="document.getElementById('status-jquery').style.color='#0f0'; document.getElementById('status-jquery').innerText='jQuery: OK'"></script>
   <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"
+    onload="document.getElementById('status-chessjs').style.color='#0f0'; document.getElementById('status-chessjs').innerText='Chess.js: OK'"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-  <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
-  <script src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-  <script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
-  <!-- Busuanzi Counter Script -->
-  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-  <!-- Paho MQTT -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
-  <!-- Live Canvas -->
-  <script src="live_canvas.js"></script>
-  <script>
-    if (document.getElementById('live-canvas-container')) {
-      new LiveCanvas('live-canvas-container');
-    }
-  </script>
 
-  <!-- Chess Games -->
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"
+    onload="document.getElementById('status-paho').style.color='#0f0'; document.getElementById('status-paho').innerText='Paho MQTT: OK'"></script>
+
+  <script src="live_canvas.js"></script>
+  <script>if (document.getElementById('live-canvas-container')) new LiveCanvas('live-canvas-container');</script>
+
   <script src="chess_game.js"></script>
-  <script src="shooter_game.js"></script>
+  <script src="shooter_game.js"
+    onload="document.getElementById('status-shooter').style.color='#0f0'; document.getElementById('status-shooter').innerText='Shooter Script: OK';"></script>
+  <script src="platformer_game.js"
+    onload="document.getElementById('status-platformer').style.color='#0f0'; document.getElementById('status-platformer').innerText='Platformer Script: OK';"></script>
+
   <script>
-    // Initialize games after load
     window.addEventListener('load', () => {
-      new ChessGameManager();
-      new ShooterGame('shooter-canvas');
+      // Init Chess
+      try {
+        if (window.ChessGameManager) { new ChessGameManager(); }
+        else { console.warn("ChessGameManager missing"); }
+      } catch (e) { console.error("Chess:", e); }
+
+      // Init Shooter
+      try {
+        if (window.ShooterGame) { new ShooterGame('shooter-canvas'); }
+        else {
+          console.warn("ShooterGame missing");
+          document.getElementById('status-shooter').style.color = 'red';
+          document.getElementById('status-shooter').innerText = 'Shooter Script: FAILED';
+        }
+      } catch (e) { console.error("Shooter:", e); }
+
+      // Init Platformer
+      try {
+        if (window.PlatformerGame) { new PlatformerGame('platformer-canvas'); }
+        else {
+          console.warn("PlatformerGame missing");
+          document.getElementById('status-platformer').style.color = 'red';
+          document.getElementById('status-platformer').innerText = 'Platformer Script: FAILED';
+        }
+      } catch (e) { console.error("Platformer:", e); }
     });
   </script>
 
-  <!-- Saturn Background -->
   <script src="saturn_bg.js"></script>
   <script>
     new SaturnBackground('saturn-container');
-
-    /* --- HACKER TEXT EFFECT --- */
     const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+-=[]{}|;':,./<>?";
-
     document.querySelectorAll('h1, .menu-button, .menu-dropdown a').forEach(element => {
       const triggerEffect = (event) => {
-        // event.preventDefault(); // Don't prevent default, we want links to work
         let iteration = 0;
-        const originalText = event.target.dataset.value || event.target.innerText;
-        // Store original text
         if (!event.target.dataset.value) event.target.dataset.value = event.target.innerText;
-
         clearInterval(event.target.interval);
-
         event.target.interval = setInterval(() => {
           event.target.innerText = event.target.innerText
-            .split("")
-            .map((letter, index) => {
-              if (index < iteration) {
-                return event.target.dataset.value[index];
-              }
+            .split("").map((letter, index) => {
+              if (index < iteration) return event.target.dataset.value[index];
               return letters[Math.floor(Math.random() * 26)];
-            })
-            .join("");
-
+            }).join("");
           if (iteration >= event.target.dataset.value.length) {
             clearInterval(event.target.interval);
-            event.target.innerText = event.target.dataset.value; // Ensure clean finish
+            event.target.innerText = event.target.dataset.value;
           }
-
           iteration += 1 / 3;
         }, 30);
       };
-
       element.addEventListener('mouseover', triggerEffect);
-      element.addEventListener('touchstart', triggerEffect); // Touch support
+      element.addEventListener('touchstart', triggerEffect);
     });
   </script>
 </body>
