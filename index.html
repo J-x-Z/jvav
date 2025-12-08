@@ -316,40 +316,6 @@
           </div>
         </div>
       </section>
-
-      <!-- PLATFORMER GAME -->
-      <section id="platformer-section" style="display: block; border-left: none; padding-bottom: 2rem;">
-        <h2
-          style="display: block; color: #ff00ff; margin-top: 0; margin-bottom: 10px; font-size: 1.5rem; border-bottom: 1px solid #ff00ff44; padding-bottom: 10px;">
-          > 乱斗竞技场 II / SMASH ARENA (Side-Scroller)
-        </h2>
-        <div style="text-align: center;">
-          <div id="platformer-container"
-            style="position: relative; width: 100%; max-width: 800px; height: 400px; margin: 0 auto; background: #000; border: 2px solid #ff00ff; overflow: hidden;">
-            <canvas id="platformer-canvas" width="800" height="400"
-              style="display: block; width: 100%; height: 100%;"></canvas>
-
-            <!-- Overlay -->
-            <div id="platformer-overlay"
-              style="position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10;">
-              <h3 style="color: #ff00ff; font-family: 'Share Tech Mono'; font-size: 2rem; margin: 0;">SMASH ARENA</h3>
-              <p style="color: #fff; margin: 10px 0;">WASD/Space to Jump | Click to Shoot</p>
-              <button id="btn-join-platformer"
-                style="padding: 10px 30px; font-size: 1.2rem; background: #ff00ff; color: #fff; border: none; font-family: 'Share Tech Mono'; cursor: pointer; margin-top: 10px;">JOIN
-                GAME</button>
-              <div id="platformer-status" style="color: #ccc; margin-top: 10px; font-size: 0.8rem;">Online Players: 0
-              </div>
-            </div>
-
-            <!-- HUD -->
-            <div id="platformer-hud"
-              style="position: absolute; top: 10px; left: 10px; z-index: 5; display: none; pointer-events: none;">
-              <div style="color: #fff; font-size: 1.2rem;">HP: <span id="platformer-hp" style="color: #0f0;">100</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </main>
   </div>
 
@@ -380,13 +346,11 @@
   <!-- Chess Games -->
   <script src="chess_game.js"></script>
   <script src="shooter_game.js"></script>
-  <script src="platformer_game.js"></script>
   <script>
     // Initialize games after load
     window.addEventListener('load', () => {
-      if (window.ChessGameManager) new ChessGameManager();
-      if (window.ShooterGame) new ShooterGame('shooter-canvas');
-      if (window.PlatformerGame) new PlatformerGame('platformer-canvas');
+      new ChessGameManager();
+      new ShooterGame('shooter-canvas');
     });
   </script>
 
