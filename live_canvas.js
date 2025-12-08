@@ -24,7 +24,7 @@ class LiveCanvas {
 
         // State for limits
         this.lastDanmakuTime = 0;
-        this.DANMAKU_COOLDOWN = 30000; // 30 seconds
+        this.DANMAKU_COOLDOWN = 5000; // Reduced to 5 seconds for better UX
 
         if (this.danmakuBtn && this.danmakuInput) {
             this.danmakuBtn.addEventListener('click', () => this.sendDanmaku());
@@ -38,15 +38,15 @@ class LiveCanvas {
         this.myColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
         this.users = {};
         this.isDrawing = false;
-        this.clientId = "jvav_client_" + Math.random().toString(16).substr(2, 8);
+        this.clientId = "jvav_live_" + Math.random().toString(16).substr(2, 8);
         this.connected = false;
 
-        this.brokerUrl = "broker.emqx.io";
-        this.port = 8084; // SSL
         this.topic = "jvav/live/interaction";
+        this.client = null;
+
+        this.lastCtxMoveTime = 0; // Throttle state
 
         if (this.container) this.initCanvas();
-        // this.initMQTT(); // Delayed
         this.animate();
 
         window.addEventListener('resize', () => {
@@ -77,7 +77,7 @@ class LiveCanvas {
             if (e.touches.length > 0) this.onDown(e.touches[0]);
         }, { passive: false });
         this.canvas.addEventListener('touchend', (e) => {
-            e.preventDefault();
+            // e.preventDefault(); // Don't block default here to allow clicking other things if needed
             this.onUp();
         });
 
@@ -148,7 +148,7 @@ class LiveCanvas {
         const text = this.danmakuInput.value.trim();
         if (!text) return;
 
-        // Double check length (HTML attribute should prevent this but just in case)
+        // Double check length
         if (text.length > 10) {
             alert("弹幕太长了！(Max 10)");
             return;
@@ -162,9 +162,9 @@ class LiveCanvas {
 
         this.publish({ type: 'danmaku', text: text });
         this.danmakuInput.value = '';
-        this.lastDanmakuTime = now; // Update cooldown
+        this.lastDanmakuTime = now;
 
-        // Local render immediately (optional, but good for feedback)
+        // Local render immediately
         this.renderDanmaku(text, this.myColor, true);
     }
 
@@ -206,36 +206,49 @@ class LiveCanvas {
         }, duration + 100);
     }
 
-    // --- MQTT & LOGIC ---
+    // --- MQTT & LOGIC (MQTT.js Version) ---
     initMQTT() {
-        if (typeof Paho === 'undefined') {
-            console.error("Paho Not Loaded");
+        if (typeof mqtt === 'undefined') {
+            console.error("MQTT.js Not Loaded");
             return;
         }
-        this.client = new Paho.MQTT.Client(this.brokerUrl, this.port, this.clientId);
-        this.client.onConnectionLost = () => { this.connected = false; };
-        this.client.onMessageArrived = (msg) => {
-            try {
-                const data = JSON.parse(msg.payloadString);
-                if (data.id === this.myId) return;
-                this.handleRemoteData(data);
-            } catch (e) { }
+
+        const options = {
+            clean: true,
+            connectTimeout: 4000,
+            clientId: this.clientId,
+            path: '/mqtt',
         };
-        this.client.connect({
-            onSuccess: () => {
-                this.connected = true;
-                this.client.subscribe(this.topic);
-            },
-            onFailure: (e) => { console.log("Conn Fail", e); },
-            useSSL: true
+
+        // Connect using WSS (Works on HTTPS Github Pages)
+        this.client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', options);
+
+        this.client.on('connect', () => {
+            console.log('LiveCanvas Connected');
+            this.connected = true;
+            this.client.subscribe(this.topic);
+        });
+
+        this.client.on('error', (err) => {
+            console.error('MQTT connection error:', err);
+            this.connected = false;
+        });
+
+        this.client.on('message', (topic, message) => {
+            try {
+                const data = JSON.parse(message.toString());
+                if (data.id === this.myId) return; // Ignore self
+                this.handleRemoteData(data);
+            } catch (e) {
+                console.error('Msg Parse Error', e);
+            }
         });
     }
 
     publish(data) {
-        if (!this.client || !this.client.isConnected()) return;
-        const msg = new Paho.MQTT.Message(JSON.stringify({ ...data, id: this.myId, color: this.myColor }));
-        msg.destinationName = this.topic;
-        this.client.send(msg);
+        if (!this.client || !this.connected) return;
+        const payload = JSON.stringify({ ...data, id: this.myId, color: this.myColor });
+        this.client.publish(this.topic, payload);
     }
 
     handleRemoteData(data) {
@@ -264,12 +277,19 @@ class LiveCanvas {
     onMove(e) {
         if (!this.container) return;
         const pos = this.getPos(e);
-        const data = { type: 'move', x: pos.x, y: pos.y };
+
+        // Always draw locally immediately for smoothness
         if (this.isDrawing) {
-            data.type = 'draw';
             this.drawStroke(this.lastPos, pos, this.myColor);
             this.lastPos = pos;
         }
+
+        // Throttle Network Updates (Max 30fps = ~33ms)
+        const now = Date.now();
+        if (now - this.lastCtxMoveTime < 33) return;
+        this.lastCtxMoveTime = now;
+
+        const data = { type: this.isDrawing ? 'draw' : 'move', x: pos.x, y: pos.y };
         this.publish(data);
     }
     onDown(e) {
@@ -321,3 +341,6 @@ class LiveCanvas {
         }
     }
 }
+
+// Export for global usage
+window.LiveCanvas = LiveCanvas;

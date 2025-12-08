@@ -430,7 +430,34 @@
           </div>
         </div>
       </section>
+
+      <!-- MINESWEEPER SECTION -->
+      <section id="minesweeper-section" style="margin-top: 50px;">
+        <!-- Game renders here -->
+      </section>
+
+      <!-- Chat Room -->
+      <section id="chat-room" style="max-height: 800px; display: flex; flex-direction: column;">
+        <h2 class="hacker-text" data-value="> CHAT / 聊天室">> CHAT / 聊天室</h2>
+        <div id="giscus-container" style="flex-grow: 1; overflow-y: auto; padding-right: 10px;">
+          <script src="https://giscus.app/client.js" data-repo="J-x-Z/jvav" data-repo-id="R_kgDONa7Y6g"
+            data-category="General" data-category-id="DIC_kwDONa7Y6s4ClKFP" data-mapping="pathname" data-strict="0"
+            data-reactions-enabled="1" data-emit-metadata="0" data-input-position="bottom" data-theme="dark_dimmed"
+            data-lang="zh-CN" crossorigin="anonymous" async>
+            </script>
+        </div>
+        <!-- Visitor Counter -->
+        <div
+          style="margin-top: 20px; text-align: center; font-size: 0.8rem; color: #666; border-top: 1px solid #333; padding-top: 10px;">
+          <span id="busuanzi_container_site_pv" style="display:none">
+            VISITS: <span id="busuanzi_value_site_pv" style="color: #00ffff;"></span>
+          </span>
+        </div>
+      </section>
     </main>
+    <footer>
+      <p>&copy; 2023 JVAV. All rights reserved.</p>
+    </footer>
   </div>
 
   <!-- DEPENDENCIES & SCRIPTS -->
@@ -442,62 +469,103 @@
 
   <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
   <script src="live_canvas.js"></script>
-  <script>if (document.getElementById('live-canvas-container')) new LiveCanvas('live-canvas-container');</script>
-
   <script src="chess_game.js"></script>
   <script src="shooter_game.js"></script>
   <script src="platformer_game.js"></script>
+  <script src="minesweeper.js"></script> <!-- New Minesweeper Script -->
+
 
   <script>
+    // Initialize All Games
     window.addEventListener('load', () => {
-      // Init Chess
       try {
-        if (window.ChessGameManager) { new ChessGameManager(); }
-        else { console.warn("ChessGameManager missing"); }
-      } catch (e) { console.error("Chess:", e); }
+        window.ChessGameManager ? new window.ChessGameManager() : console.warn('Chess not loaded');
+      } catch (e) { console.error('Chess Init Error:', e); }
 
-      // Init Shooter
       try {
-        if (window.ShooterGame) { new ShooterGame('shooter-canvas'); }
-        else { console.warn("ShooterGame missing"); }
-      } catch (e) { console.error("Shooter:", e); }
+        // Only init if canvas exists (it's dynamically hidden/shown in some versions, but here it's static)
+        if (document.getElementById('shooter-canvas')) { // Changed to shooter-canvas
+          window.ShooterGame ? new window.ShooterGame('shooter-canvas') : console.warn('Shooter not loaded'); // Changed to shooter-canvas
+        }
+      } catch (e) { console.error('Shooter Init Error:', e); }
 
-      // Init Platformer
       try {
-        if (window.PlatformerGame) { new PlatformerGame('platformer-canvas'); }
-        else { console.warn("PlatformerGame missing"); }
-      } catch (e) { console.error("Platformer:", e); }
+        if (document.getElementById('platformer-canvas')) { // Changed to platformer-canvas
+          window.PlatformerGame ? new window.PlatformerGame('platformer-canvas') : console.warn('Platformer not loaded'); // Changed to platformer-canvas
+        }
+      } catch (e) { console.error('Platformer Init Error:', e); }
+
+      try {
+        // Init Live Canvas
+        if (window.LiveCanvas) {
+          new window.LiveCanvas('live-canvas-container'); // Changed to live-canvas-container
+        }
+      } catch (e) { console.error('LiveCanvas Init Error:', e); }
+
+      try {
+        // Init Minesweeper
+        if (window.MinesweeperGame) {
+          new window.MinesweeperGame('minesweeper-section');
+        }
+      } catch (e) { console.error('Minesweeper Init Error:', e); }
     });
-  </script>
 
-  <script src="saturn_bg.js"></script>
-  <script>
-    new SaturnBackground('saturn-container');
-    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+-=[]{}|;':,./<>?";
-    document.querySelectorAll('h1, .menu-button, .menu-dropdown a').forEach(element => {
-      const triggerEffect = (event) => {
+    // Hacker Effect
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    document.querySelectorAll(".hacker-text").forEach(element => {
+      // Mouseover event
+      element.onmouseover = event => {
         let iteration = 0;
-        if (!event.target.dataset.value) event.target.dataset.value = event.target.innerText;
         clearInterval(event.target.interval);
+
         event.target.interval = setInterval(() => {
           event.target.innerText = event.target.innerText
-            .split("").map((letter, index) => {
-              if (index < iteration) return event.target.dataset.value[index];
+            .split("")
+            .map((letter, index) => {
+              if (index < iteration) {
+                return event.target.dataset.value[index];
+              }
               return letters[Math.floor(Math.random() * 26)];
-            }).join("");
+            })
+            .join("");
+
           if (iteration >= event.target.dataset.value.length) {
             clearInterval(event.target.interval);
-            event.target.innerText = event.target.dataset.value;
           }
+
           iteration += 1 / 3;
         }, 30);
-      };
-      element.addEventListener('mouseover', triggerEffect);
-      element.addEventListener('touchstart', triggerEffect);
+      }
+
+      // Touch event (mobile support)
+      element.addEventListener("touchstart", (event) => {
+        let iteration = 0;
+        clearInterval(event.target.interval);
+
+        event.target.interval = setInterval(() => {
+          event.target.innerText = event.target.innerText
+            .split("")
+            .map((letter, index) => {
+              if (index < iteration) {
+                return event.target.dataset.value[index];
+              }
+              return letters[Math.floor(Math.random() * 26)];
+            })
+            .join("");
+
+          if (iteration >= event.target.dataset.value.length) {
+            clearInterval(event.target.interval);
+          }
+
+          iteration += 1 / 3;
+        }, 30);
+      });
     });
   </script>
 </body>
 
 </html>
+```
