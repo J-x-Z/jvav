@@ -194,6 +194,16 @@
       <section>施工中</section>
       <section>施工中</section>
 
+      <!-- LIVE PLAYGROUND -->
+      <section id="live-playground-section" style="display: block; border-left: none; padding-bottom: 2rem;">
+        <h2
+          style="display: block; color: #ff00ff; margin-top: 0; margin-bottom: 10px; font-size: 1.5rem; border-bottom: 1px solid #ff00ff44; padding-bottom: 10px;">
+          > 实时互动画布 / LIVE CANVAS
+        </h2>
+        <p style="font-size: 0.9rem; color: #ff00ffaa; margin-bottom: 10px;">> 在这里移动鼠标或绘画，其他在线用户都能实时看到！(无需登录)</p>
+        <div id="live-canvas-container" style="width: 100%; height: 300px; position: relative;"></div>
+      </section>
+
       <!-- CHAT ROOM SECTION -->
       <section style="display: block; height: auto; padding-top: 1rem; padding-bottom: 1rem;">
         <h2
@@ -254,7 +264,8 @@
     const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()_+-=[]{}|;':,./<>?";
 
     document.querySelectorAll('h1, .menu-button, .menu-dropdown a').forEach(element => {
-      element.addEventListener('mouseover', event => {
+      const triggerEffect = (event) => {
+        // event.preventDefault(); // Don't prevent default, we want links to work
         let iteration = 0;
         const originalText = event.target.dataset.value || event.target.innerText;
         // Store original text
@@ -280,7 +291,10 @@
 
           iteration += 1 / 3;
         }, 30);
-      });
+      };
+
+      element.addEventListener('mouseover', triggerEffect);
+      element.addEventListener('touchstart', triggerEffect); // Touch support
     });
   </script>
 </body>
